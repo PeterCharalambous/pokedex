@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#c62a12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pokédex">
+<title>Pokédex</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23fff' stroke='%23222' stroke-width='8'/%3E%3Cpath d='M4 50a46 46 0 0 1 92 0z' fill='%23e3350d' stroke='%23222' stroke-width='8'/%3E%3Ccircle cx='50' cy='50' r='13' fill='%23fff' stroke='%23222' stroke-width='8'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#0f1115;--card:#1a1d24;--card2:#232731;--line:#2c313c;--tx:#e9ecf1;--mut:#9aa3b2;--acc:#e3350d;--acc2:#ff5a36;--r:14px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+a{color:inherit;text-decoration:none}
+button,select,input{font:inherit;color:inherit}
+.hidden{display:none!important}
+header{position:sticky;top:0;z-index:20;background:linear-gradient(#c62a12,#a8220e);padding:calc(env(safe-area-inset-top) + 10px) 12px 10px;box-shadow:0 2px 10px #0008}
+.brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:20px;margin-bottom:8px}
+.brand small{font-weight:500;font-size:12px;opacity:.85;margin-left:auto}
+.row{display:flex;gap:8px;align-items:center}
+.ctl{background:#0006;border:1px solid #fff3;border-radius:10px;padding:9px 10px;min-width:0}
+#q{flex:1}
+#game{width:100%;margin-bottom:8px;font-weight:600}
+.chip{border:1px solid #fff3;background:#0004;border-radius:999px;padding:6px 11px;font-size:13px;white-space:nowrap;cursor:pointer}
+.chip.on{background:#fff;color:#a8220e;font-weight:700}
+#status{padding:8px 14px;color:var(--mut);font-size:13px}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px;padding:0 10px calc(20px + env(safe-area-inset-bottom))}
+.card{background:var(--card);border-radius:var(--r);padding:6px 6px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;content-visibility:auto;contain-intrinsic-size:150px;position:relative}
+.card img{width:84px;height:84px;image-rendering:pixelated}
+.card .num{font-size:11px;color:var(--mut)}
+.card .nm{font-weight:650;font-size:13px;line-height:1.2}
+.card .fav{position:absolute;top:5px;right:7px;color:#ffd23f;font-size:13px}
+.tys{display:flex;gap:3px;justify-content:center;flex-wrap:wrap;margin-top:4px}
+.t{display:inline-block;border-radius:6px;padding:2px 7px;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.3px;text-shadow:0 1px 1px #0006}
+.t.sm{font-size:9px;padding:1px 5px}
+/* detail */
+#detail{position:fixed;inset:0;z-index:40;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.dtop{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:6px;padding:calc(env(safe-area-inset-top) + 8px) 10px 8px;background:#0f1115ee;backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.ib{background:var(--card2);border:0;border-radius:10px;min-width:40px;height:38px;padding:0 10px;cursor:pointer}
+.dtop .gname{flex:1;text-align:center;font-size:12px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hero{position:relative;text-align:center;padding:14px 10px 4px}
+.hero .bg{position:absolute;inset:0;opacity:.28;filter:blur(40px)}
+.hero img.art{position:relative;width:min(240px,62vw);height:min(240px,62vw);object-fit:contain;filter:drop-shadow(0 8px 14px #0009)}
+.shinybtn{position:absolute;right:14px;top:14px;z-index:2;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:7px 12px;cursor:pointer;font-weight:700;font-size:13px}
+.shinybtn.on{background:linear-gradient(135deg,#ffd23f,#ff8a3d);color:#222;border-color:transparent}
+.title{text-align:center;padding:0 12px}
+.title h1{margin:4px 0 0;font-size:26px}
+.title .sub{color:var(--mut);font-size:13px}
+.title .tys{margin:8px 0}
+.note{margin:8px 12px;padding:9px 12px;border-radius:10px;background:#3a2a10;color:#ffd58a;font-size:13px}
+.note.blue{background:#122a3d;color:#9fd2ff}
+.varsel{display:block;margin:8px auto 0;max-width:92%}
+.tabs{position:sticky;top:calc(env(safe-area-inset-top) + 55px);z-index:4;display:flex;background:var(--bg);border-bottom:1px solid var(--line);margin-top:10px}
+.tabs button{flex:1;background:none;border:0;padding:12px 4px;color:var(--mut);font-weight:650;border-bottom:3px solid transparent;cursor:pointer}
+.tabs button.on{color:var(--tx);border-color:var(--acc)}
+.pane{padding:12px 12px calc(40px + env(safe-area-inset-bottom))}
+.box{background:var(--card);border-radius:var(--r);padding:12px;margin-bottom:12px}
+.box h3{margin:0 0 10px;font-size:14px;text-transform:uppercase;letter-spacing:.6px;color:var(--mut)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px}
+.kv dt{color:var(--mut)}.kv dd{margin:0}
+.stat{display:grid;grid-template-columns:62px 34px 1fr;align-items:center;gap:8px;font-size:13px;margin:5px 0}
+.stat .bar{height:9px;border-radius:9px;background:var(--card2);overflow:hidden}
+.stat .bar i{display:block;height:100%;border-radius:9px}
+.sprites{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.sprites figure{margin:0;text-align:center;background:var(--card2);border-radius:10px;padding:4px 6px;font-size:11px;color:var(--mut)}
+.sprites img{width:80px;height:80px;image-rendering:pixelated;display:block}
+.ab{display:block;width:100%;text-align:left;background:var(--card2);border:0;border-radius:10px;padding:8px 10px;margin:5px 0;cursor:pointer}
+.ab small{color:var(--mut)}
+.ab .eff{display:block;color:var(--mut);font-size:13px;margin-top:4px}
+.wk{display:grid;grid-template-columns:42px 1fr;gap:8px;align-items:start;margin:6px 0}
+.wk b{font-size:13px;padding-top:2px}
+/* evo */
+.evo{display:flex;flex-direction:column;align-items:center}
+.evo-card{display:flex;flex-direction:column;align-items:center;background:var(--card2);border-radius:12px;padding:6px 10px;min-width:96px;cursor:pointer}
+.evo-card.cur{outline:2px solid var(--acc)}
+.evo-card img{width:76px;height:76px}
+.evo-card span{font-size:13px;font-weight:650}
+.evo-branches{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:4px}
+.evo-branch{display:flex;flex-direction:column;align-items:center}
+.evo-arrow{font-size:12px;color:var(--mut);text-align:center;max-width:150px;padding:4px 0}
+.evo-arrow:before{content:"↓";display:block;font-size:18px;color:var(--acc2)}
+/* moves */
+.mvhead,.mv{display:grid;grid-template-columns:44px 1fr 66px 22px 32px 36px;gap:4px;align-items:center;font-size:13px}
+.mvhead{color:var(--mut);font-size:11px;text-transform:uppercase;padding:0 4px 4px;border-bottom:1px solid var(--line)}
+.mv{padding:8px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+.mv .mn{font-weight:600;overflow:hidden;text-overflow:ellipsis}
+.mv .lv{color:var(--mut);font-size:12px}
+.mv .num{text-align:right}
+.cat{width:20px;height:20px;border-radius:5px;display:grid;place-items:center;font-size:10px;font-weight:800;color:#fff}
+.cat.physical{background:#d0582a}.cat.special{background:#3d6ad6}.cat.status{background:#7a7f8c}
+.mveff{font-size:12.5px;color:var(--mut);padding:2px 4px 10px;border-bottom:1px solid var(--line)}
+.mvsel{width:100%;margin-bottom:10px}
+/* locations */
+.loc{padding:8px 0;border-bottom:1px solid var(--line)}
+.loc:last-child{border:0}
+.loc .ln{font-weight:650}
+.loc .ld{font-size:13px;color:var(--mut)}
+.cond{display:inline-block;font-size:11px;background:var(--card2);border-radius:6px;padding:1px 6px;margin:2px 3px 0 0;color:var(--tx)}
+details.vg{background:var(--card);border-radius:var(--r);margin-bottom:8px;padding:10px 12px}
+details.vg summary{font-weight:700;cursor:pointer}
+.sel{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:9px 10px}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid var(--mut);border-top-color:transparent;border-radius:50%;animation:sp 0.8s linear infinite;vertical-align:-3px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.empty{color:var(--mut);text-align:center;padding:30px 10px}
+.foot{color:var(--mut);font-size:11px;text-align:center;padding:10px}
+.foot a{text-decoration:underline}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><span>◓ Pokédex</span><small id="count"></small></div>
+  <select id="game" class="ctl"><option value="all">All games · National Dex</option></select>
+  <div class="row">
+    <input id="q" class="ctl" type="search" placeholder="Search name or #" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <select id="type" class="ctl" style="max-width:118px"><option value="">All types</option></select>
+  </div>
+  <div class="row" style="margin-top:8px;overflow-x:auto">
+    <span class="chip" id="favChip">★ Favourites</span>
+    <span class="chip hidden" id="regChip">Regional dex only</span>
+  </div>
+</header>
+<div id="status"><span class="spin"></span> Loading Pokémon…</div>
+<main id="grid"></main>
+<div class="foot">Data &amp; sprites from <a href="https://pokeapi.co" target="_blank" rel="noopener">PokéAPI</a>. Cached on your device after first view.</div>
+
+<section id="detail" class="hidden"></section>
+
+<script>
+'use strict';
+const API = 'https://pokeapi.co/api/v2/';
+const SPR = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const idFromUrl = u => +u.split('/').filter(Boolean).pop();
+const pad = n => String(n).padStart(4, '0').replace(/^0(?=\d{3})/, '');
+const pretty = s => s ? s.split('-').map(w => w ? w[0].toUpperCase() + w.slice(1) : w).join(' ') : '';
+const ls = { get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+             set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+
+const TYPES = ['normal','fire','water','electric','grass','ice','fighting','poison','ground','flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'];
+const TCOL = {normal:'#9a9a7a',fire:'#ee7f30',water:'#5b8ef0',electric:'#e6c22a',grass:'#6cbf4a',ice:'#7fcfcf',fighting:'#bf3029',poison:'#9b3f9b',ground:'#d9b75a',flying:'#9a86ec',psychic:'#f2507f',bug:'#a0b020',rock:'#b39b3a',ghost:'#6a5590',dragon:'#6a3cf2',dark:'#6a5446',steel:'#a8a8c4',fairy:'#e48fb0',stellar:'#3fb0c8',unknown:'#68a090',shadow:'#403050'};
+const tchip = (t, sm) => `<span class="t${sm ? ' sm' : ''}" style="background:${TCOL[t] || '#666'}">${esc(t)}</span>`;
+
+// Attacker -> defender multipliers (Gen 6+), only non-1 entries
+const CHART = {
+  normal:{rock:.5,ghost:0,steel:.5},
+  fire:{fire:.5,water:.5,grass:2,ice:2,bug:2,rock:.5,dragon:.5,steel:2},
+  water:{fire:2,water:.5,grass:.5,ground:2,rock:2,dragon:.5},
+  electric:{water:2,electric:.5,grass:.5,ground:0,flying:2,dragon:.5},
+  grass:{fire:.5,water:2,grass:.5,poison:.5,ground:2,flying:.5,bug:.5,rock:2,dragon:.5,steel:.5},
+  ice:{fire:.5,water:.5,grass:2,ice:.5,ground:2,flying:2,dragon:2,steel:.5},
+  fighting:{normal:2,ice:2,poison:.5,flying:.5,psychic:.5,bug:.5,rock:2,ghost:0,dark:2,steel:2,fairy:.5},
+  poison:{grass:2,poison:.5,ground:.5,rock:.5,ghost:.5,steel:0,fairy:2},
+  ground:{fire:2,electric:2,grass:.5,poison:2,flying:0,bug:.5,rock:2,steel:2},
+  flying:{electric:.5,grass:2,fighting:2,bug:2,rock:.5,steel:.5},
+  psychic:{fighting:2,poison:2,psychic:.5,dark:0,steel:.5},
+  bug:{fire:.5,grass:2,fighting:.5,poison:.5,flying:.5,psychic:2,ghost:.5,dark:2,steel:.5,fairy:.5},
+  rock:{fire:2,ice:2,fighting:.5,ground:.5,flying:2,bug:2,steel:.5},
+  ghost:{normal:0,psychic:2,ghost:2,dark:.5},
+  dragon:{dragon:2,steel:.5,fairy:0},
+  dark:{fighting:.5,psychic:2,ghost:2,dark:.5,fairy:.5},
+  steel:{fire:.5,water:.5,electric:.5,ice:2,rock:2,steel:.5,fairy:2},
+  fairy:{fire:.5,fighting:2,poison:.5,dragon:2,dark:2,steel:.5}
+};
+
+const NAME_FIX = {'nidoran-f':'Nidoran♀','nidoran-m':'Nidoran♂','mr-mime':'Mr. Mime','mime-jr':'Mime Jr.','mr-rime':'Mr. Rime',
+  'farfetchd':"Farfetch'd",'sirfetchd':"Sirfetch'd",'type-null':'Type: Null','ho-oh':'Ho-Oh','porygon-z':'Porygon-Z',
+  'jangmo-o':'Jangmo-o','hakamo-o':'Hakamo-o','kommo-o':'Kommo-o','flabebe':'Flabébé','chi-yu':'Chi-Yu','wo-chien':'Wo-Chien',
+  'ting-lu':'Ting-Lu','chien-pao':'Chien-Pao','tapu-koko':'Tapu Koko','tapu-lele':'Tapu Lele','tapu-bulu':'Tapu Bulu','tapu-fini':'Tapu Fini'};
+const pname = n => NAME_FIX[n] || pretty(n);
+
+const GAME_LABEL = {'red-blue':'Red / Blue','yellow':'Yellow','gold-silver':'Gold / Silver','crystal':'Crystal',
+  'ruby-sapphire':'Ruby / Sapphire','emerald':'Emerald','firered-leafgreen':'FireRed / LeafGreen','colosseum':'Colosseum','xd':'XD: Gale of Darkness',
+  'diamond-pearl':'Diamond / Pearl','platinum':'Platinum','heartgold-soulsilver':'HeartGold / SoulSilver',
+  'black-white':'Black / White','black-2-white-2':'Black 2 / White 2','x-y':'X / Y','omega-ruby-alpha-sapphire':'Omega Ruby / Alpha Sapphire',
+  'sun-moon':'Sun / Moon','ultra-sun-ultra-moon':'Ultra Sun / Ultra Moon','lets-go-pikachu-lets-go-eevee':"Let's Go Pikachu / Eevee",
+  'sword-shield':'Sword / Shield','the-isle-of-armor':'Sword / Shield – Isle of Armor','the-crown-tundra':'Sword / Shield – Crown Tundra',
+  'brilliant-diamond-and-shining-pearl':'Brilliant Diamond / Shining Pearl','legends-arceus':'Legends: Arceus',
+  'scarlet-violet':'Scarlet / Violet','the-teal-mask':'Scarlet / Violet – Teal Mask','the-indigo-disk':'Scarlet / Violet – Indigo Disk',
+  'legends-za':'Legends: Z-A','red-green-japan':'Red / Green (JP)','blue-japan':'Blue (JP)'};
+const gameLabel = n => GAME_LABEL[n] || pretty(n);
+const ROMAN = {i:1,ii:2,iii:3,iv:4,v:5,vi:6,vii:7,viii:8,ix:9,x:10,xi:11};
+const genNum = name => ROMAN[(name || '').replace('generation-', '')] || 99;
+
+/* ---------- fetch + cache ---------- */
+const mem = new Map();
+const dbp = new Promise(res => {
+  try { const r = indexedDB.open('pokedex-cache', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('c');
+    r.onsuccess = () => res(r.result); r.onerror = () => res(null);
+  } catch { res(null); }
+});
+async function idbGet(k) { const db = await dbp; if (!db) return; return new Promise(r => { try { const q = db.transaction('c').objectStore('c').get(k); q.onsuccess = () => r(q.result); q.onerror = () => r(); } catch { r(); } }); }
+async function idbSet(k, v) { const db = await dbp; if (!db) return; try { db.transaction('c', 'readwrite').objectStore('c').put(v, k); } catch {} }
+function limiter(n) { let a = 0; const q = [];
+  const next = () => { if (a >= n || !q.length) return; a++; const [f, res, rej] = q.shift(); f().then(res, rej).finally(() => { a--; next(); }); };
+  return f => new Promise((res, rej) => { q.push([f, res, rej]); next(); }); }
+const lim = limiter(10);
+function get(url) {
+  if (!url.startsWith('http')) url = API + url;
+  if (mem.has(url)) return mem.get(url);
+  const p = (async () => {
+    const c = await idbGet(url); if (c) return c;
+    let lastErr;
+    for (let i = 0; i < 3; i++) {
+      try { const r = await lim(() => fetch(url)); if (!r.ok) throw new Error(r.status + ' ' + url);
+        const j = await r.json(); idbSet(url, j); return j; }
+      catch (e) { lastErr = e; if (String(e.message).startsWith('404')) break; await new Promise(r => setTimeout(r, 600 * (i + 1))); }
+    }
+    mem.delete(url); throw lastErr;
+  })();
+  mem.set(url, p); return p;
+}
+
+/* ---------- state ---------- */
+const S = { species: [], byId: new Map(), types: {}, groups: [], gmap: {}, game: ls.get('game', 'all'),
+  dex: null, regOnly: true, q: '', type: '', favOnly: false, favs: new Set(ls.get('favs', [])), shiny: false, order: [] };
+let groupsReady;
+
+/* ---------- list ---------- */
+function visibleItems() {
+  let items;
+  if (S.dex && S.regOnly) items = S.dex.list.map(e => ({ id: e.id, num: e.num }));
+  else items = S.species.map(s => ({ id: s.id, num: s.id }));
+  const q = S.q.trim().toLowerCase().replace(/^#/, '');
+  return items.filter(it => {
+    const sp = S.byId.get(it.id); if (!sp) return false;
+    if (q) { const isNum = /^\d+$/.test(q);
+      if (isNum ? !(String(it.num).startsWith(q) || String(it.id) === q) : !(sp.name.includes(q.replace(/\s+/g, '-')) || sp.label.toLowerCase().includes(q))) return false; }
+    if (S.type && !(S.types[it.id] || []).includes(S.type)) return false;
+    if (S.favOnly && !S.favs.has(it.id)) return false;
+    return true;
+  });
+}
+function renderList() {
+  const items = visibleItems();
+  S.order = items.map(i => i.id);
+  $('#count').textContent = items.length + ' shown';
+  $('#grid').innerHTML = items.length ? items.map(it => {
+    const sp = S.byId.get(it.id); const ty = S.types[it.id] || [];
+    return `<a class="card" href="#${it.id}">${S.favs.has(it.id) ? '<span class="fav">★</span>' : ''}<img loading="lazy" decoding="async" alt="" src="${SPR}${it.id}.png"><span class="num">#${pad(it.num)}</span><span class="nm">${esc(sp.label)}</span><span class="tys">${ty.filter(Boolean).map(t => tchip(t, 1)).join('')}</span></a>`;
+  }).join('') : '<div class="empty" style="grid-column:1/-1">No Pokémon match.</div>';
+}
+
+async function setGame(g) {
+  S.game = g; ls.set('game', g); $('#game').value = g;
+  $('#regChip').classList.toggle('hidden', g === 'all');
+  if (g === 'all') { S.dex = null; $('#status').textContent = ''; renderList(); return; }
+  $('#status').innerHTML = '<span class="spin"></span> Loading ' + esc(gameLabel(g)) + ' Pokédex…';
+  try {
+    await groupsReady; const grp = S.gmap[g];
+    if (!grp || !grp.pokedexes.length) { S.dex = null; $('#status').textContent = 'No regional Pokédex for this game – showing all Pokémon.'; renderList(); return; }
+    const dexes = await Promise.all(grp.pokedexes.map(p => get(p.url)));
+    const seen = new Set(), list = [];
+    for (const d of dexes) for (const e of d.pokemon_entries) {
+      const id = idFromUrl(e.pokemon_species.url); if (seen.has(id)) continue; seen.add(id); list.push({ id, num: e.entry_number });
+    }
+    if (S.game !== g) return;
+    S.dex = { ids: seen, list, names: dexes.map(d => pretty(d.name)) };
+    $('#status').textContent = gameLabel(g) + ' · ' + S.dex.names.join(', ') + ' Pokédex';
+  } catch (e) { S.dex = null; $('#status').textContent = 'Could not load this Pokédex (offline?) – showing all.'; }
+  renderList();
+}
+
+async function init() {
+  TYPES.forEach(t => $('#type').insertAdjacentHTML('beforeend', `<option value="${t}">${pretty(t)}</option>`));
+  try {
+    const sp = await get('pokemon-species?limit=2000');
+    S.species = sp.results.map(r => ({ id: idFromUrl(r.url), name: r.name, label: pname(r.name) })).sort((a, b) => a.id - b.id);
+    S.species.forEach(s => S.byId.set(s.id, s));
+    $('#status').textContent = '';
+  } catch (e) { $('#status').innerHTML = 'Could not reach PokéAPI. Check your connection and reload.'; return; }
+
+  // groups (games)
+  groupsReady = (async () => {
+    const vg = await get('version-group?limit=200');
+    const det = await Promise.all(vg.results.map(r => get(r.url).catch(() => null)));
+    S.groups = det.filter(Boolean).sort((a, b) => a.id - b.id).map((g, i) => ({ name: g.name, id: g.id, idx: i, gen: genNum(g.generation.name),
+      versions: g.versions.map(v => v.name), pokedexes: g.pokedexes }));
+    S.groups.forEach(g => S.gmap[g.name] = g);
+    const sel = $('#game'); let lastGen = 0, og;
+    for (const g of S.groups) {
+      if (g.gen !== lastGen) { og = document.createElement('optgroup'); og.label = 'Generation ' + g.gen; sel.appendChild(og); lastGen = g.gen; }
+      og.insertAdjacentHTML('beforeend', `<option value="${g.name}">${esc(gameLabel(g.name))}</option>`);
+    }
+    sel.value = S.game;
+  })();
+  groupsReady.catch(() => {});
+
+  if (S.game !== 'all') await setGame(S.game); else renderList();
+  route();
+
+  // types for list chips (background)
+  Promise.all(TYPES.map(t => get('type/' + t).then(d => {
+    for (const p of d.pokemon) { const id = idFromUrl(p.pokemon.url); if (id > 5000) continue; (S.types[id] ||= [])[p.slot - 1] = t; }
+  }).catch(() => {}))).then(renderList);
+}
+
+/* ---------- controls ---------- */
+let qt; $('#q').addEventListener('input', e => { clearTimeout(qt); qt = setTimeout(() => { S.q = e.target.value; renderList(); }, 120); });
+$('#type').addEventListener('change', e => { S.type = e.target.value; renderList(); });
+$('#game').addEventListener('change', e => setGame(e.target.value));
+$('#favChip').addEventListener('click', e => { S.favOnly = !S.favOnly; e.target.classList.toggle('on', S.favOnly); renderList(); });
+$('#regChip').classList.add('on');
+$('#regChip').addEventListener('click', e => { S.regOnly = !S.regOnly; e.target.classList.toggle('on', S.regOnly); renderList(); });
+
+/* ---------- routing ---------- */
+let listScroll = 0;
+function route() {
+  const id = +location.hash.slice(1);
+  if (id && S.byId.has(id)) { if ($('#detail').classList.contains('hidden')) listScroll = scrollY; showDetail(id); }
+  else { sawList = true; $('#detail').classList.add('hidden'); document.body.style.overflow = ''; renderList(); scrollTo(0, listScroll); }
+}
+addEventListener('hashchange', route);
+
+/* ---------- detail ---------- */
+let D = null; // current detail context
+function curGroup() { return S.game !== 'all' ? S.gmap[S.game] : null; }
+
+function pickSpriteSet(pk, grp) {
+  const vers = pk.sprites.versions || {};
+  if (grp) {
+    const norm = s => s.replace(/-and-/g, '-').replace(/[^a-z0-9]/g, '');
+    const want = [grp.name, ...grp.versions].map(norm);
+    for (const gen of Object.values(vers)) for (const [k, v] of Object.entries(gen))
+      if (k !== 'icons' && want.includes(norm(k)) && v && v.front_default) return { set: v, label: gameLabel(grp.name) };
+  }
+  return { set: pk.sprites, label: 'Default' };
+}
+
+async function showDetail(id, varietyUrl) {
+  const el = $('#detail'); el.classList.remove('hidden'); document.body.style.overflow = 'hidden';
+  const token = Symbol(); D = { token, id };
+  el.innerHTML = `<div class="dtop"><button class="ib" id="back">‹ Back</button><div class="gname"></div></div><div class="empty"><span class="spin"></span></div>`;
+  $('#back').onclick = goBack;
+  try {
+    await groupsReady.catch(() => {});
+    const sp = await get('pokemon-species/' + id);
+    const defVar = sp.varieties.find(v => v.is_default) || sp.varieties[0];
+    const pk = await get(varietyUrl || defVar.pokemon.url);
+    if (D.token !== token) return;
+    Object.assign(D, { sp, pk });
+    renderDetail();
+  } catch (e) { if (D.token === token) el.querySelector('.empty').textContent = 'Could not load (' + e.message + '). Check connection.'; }
+}
+let sawList = false;
+function goBack() { if (sawList) history.back(); else location.hash = ''; }
+
+function typesForGame(pk, grp) {
+  let types = pk.types.slice().sort((a, b) => a.slot - b.slot).map(t => t.type.name);
+  if (grp && pk.past_types && pk.past_types.length) {
+    const cand = pk.past_types.map(p => ({ g: genNum(p.generation.name), t: p.types.sort((a, b) => a.slot - b.slot).map(x => x.type.name) }))
+      .filter(p => p.g >= grp.gen).sort((a, b) => a.g - b.g);
+    if (cand.length) types = cand[0].t;
+  }
+  return types;
+}
+
+function renderDetail() {
+  const { sp, pk, id } = D; const grp = curGroup(); const el = $('#detail');
+  const types = typesForGame(pk, grp);
+  const art = pk.sprites.other?.['official-artwork'] || {}; const home = pk.sprites.other?.home || {};
+  const artN = art.front_default || home.front_default || pk.sprites.front_default || '';
+  const artS = art.front_shiny || home.front_shiny || pk.sprites.front_shiny || artN;
+  const idx = S.order.indexOf(id);
+  const prev = idx > 0 ? S.order[idx - 1] : null, next = idx >= 0 && idx < S.order.length - 1 ? S.order[idx + 1] : null;
+  const regNum = S.dex && S.dex.list.find(e => e.id === id);
+  const spGen = genNum(sp.generation.name);
+  let notes = '';
+  if (grp && spGen > grp.gen) notes += `<div class="note">Not in ${esc(gameLabel(grp.name))} – introduced in Generation ${spGen}.</div>`;
+  else if (grp && S.dex && !S.dex.ids.has(id)) notes += `<div class="note blue">Not in the ${esc(gameLabel(grp.name))} regional Pokédex (may need transfer/trade, or not available).</div>`;
+  const vars = sp.varieties.length > 1 ? `<select class="sel varsel" id="varsel">${sp.varieties.map(v => `<option value="${esc(v.pokemon.url)}" ${v.pokemon.name === pk.name ? 'selected' : ''}>${esc(pretty(v.pokemon.name))}</option>`).join('')}</select>` : '';
+  const isFav = S.favs.has(id);
+  el.innerHTML = `
+  <div class="dtop"><button class="ib" id="back">‹</button>
+    <button class="ib" id="prev" ${prev ? '' : 'disabled style="opacity:.3"'}>◀</button>
+    <div class="gname">${esc(grp ? gameLabel(grp.name) : 'All games')}</div>
+    <button class="ib" id="next" ${next ? '' : 'disabled style="opacity:.3"'}>▶</button>
+    <button class="ib" id="fav" style="color:${isFav ? '#ffd23f' : 'inherit'}">${isFav ? '★' : '☆'}</button></div>
+  <div class="hero"><div class="bg" style="background:radial-gradient(circle,${TCOL[types[0]]} 0,transparent 70%)"></div>
+    <button class="shinybtn ${S.shiny ? 'on' : ''}" id="shiny">✨ Shiny</button>
+    <img class="art" id="art" alt="" src="${esc(S.shiny ? artS : artN)}"></div>
+  <div class="title"><h1>${esc(pname(sp.name))}</h1>
+    <div class="sub">#${pad(id)}${regNum ? ` · ${esc(S.dex.names[0])} #${pad(regNum.num)}` : ''} · ${esc((sp.genera.find(g => g.language.name === 'en') || {}).genus || '')}${sp.is_legendary ? ' · Legendary' : sp.is_mythical ? ' · Mythical' : sp.is_baby ? ' · Baby' : ''}</div>
+    <div class="tys">${types.map(t => tchip(t)).join('')}</div>${vars}</div>
+  ${notes}
+  <div class="tabs"><button data-t="about" class="on">About</button><button data-t="evo">Evolution</button><button data-t="loc">Where</button><button data-t="moves">Moves</button></div>
+  <div class="pane" id="pane"></div>`;
+  $('#back').onclick = goBack;
+  $('#prev').onclick = () => prev && location.replace('#' + prev);
+  $('#next').onclick = () => next && location.replace('#' + next);
+  $('#fav').onclick = () => { S.favs.has(id) ? S.favs.delete(id) : S.favs.add(id); ls.set('favs', [...S.favs]); renderDetail(); };
+  $('#shiny').onclick = () => { S.shiny = !S.shiny; $('#shiny').classList.toggle('on', S.shiny); $('#art').src = S.shiny ? artS : artN; if (D.tab === 'about') showTab('about'); if (D.tab === 'evo') showTab('evo'); };
+  if ($('#varsel')) $('#varsel').onchange = e => { const t = D.tab; get(e.target.value).then(p => { D.pk = p; D.tab = t; renderDetail(); }); };
+  el.querySelectorAll('.tabs button').forEach(b => b.onclick = () => showTab(b.dataset.t));
+  showTab(D.tab || 'about');
+}
+
+function showTab(t) {
+  D.tab = t;
+  $('#detail').querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  const pane = $('#pane'); pane.innerHTML = '<div class="empty"><span class="spin"></span></div>';
+  const token = D.token, pk = D.pk;
+  const fn = { about: tabAbout, evo: tabEvo, loc: tabLoc, moves: tabMoves }[t];
+  fn(pane, () => D.token === token && D.pk === pk && D.tab === t).catch(e => { pane.innerHTML = `<div class="empty">Couldn't load: ${esc(e.message)}</div>`; });
+}
+
+/* --- About --- */
+function weaknesses(types, gen) {
+  const out = {};
+  for (const atk of TYPES) {
+    if (atk === 'fairy' && gen < 6) continue;
+    let m = 1;
+    for (const d of types) {
+      let v = CHART[atk][d]; if (v === undefined) v = 1;
+      if (gen < 6 && d === 'steel' && (atk === 'ghost' || atk === 'dark')) v = .5;
+      m *= v;
+    }
+    if (m !== 1) (out[m] ||= []).push(atk);
+  }
+  return out;
+}
+async function tabAbout(pane, alive) {
+  const { sp, pk } = D; const grp = curGroup();
+  const en = sp.flavor_text_entries.filter(f => f.language.name === 'en');
+  let fl = grp ? en.filter(f => grp.versions.includes(f.version.name)) : [];
+  if (!fl.length) fl = en.slice(-1);
+  const clean = s => s.replace(/[\f\n­\r]+/g, ' ').replace(/\s+/g, ' ');
+  const flavor = fl.map(f => `<p style="margin:0 0 6px">${esc(clean(f.flavor_text))} <small style="color:var(--mut)">— ${esc(pretty(f.version.name))}</small></p>`).join('');
+  const gr = sp.gender_rate; const gender = gr < 0 ? 'Genderless' : `♂ ${(100 - gr * 12.5).toFixed(1).replace('.0', '')}% · ♀ ${(gr * 12.5).toFixed(1).replace('.0', '')}%`;
+  const STN = { hp: 'HP', attack: 'Atk', defense: 'Def', 'special-attack': 'Sp. Atk', 'special-defense': 'Sp. Def', speed: 'Speed' };
+  const total = pk.stats.reduce((a, s) => a + s.base_stat, 0);
+  const stats = pk.stats.map(s => { const v = s.base_stat; const c = v < 50 ? '#e5533d' : v < 80 ? '#f2a33a' : v < 110 ? '#c8d94a' : v < 140 ? '#55c46b' : '#2fc2c9';
+    return `<div class="stat"><span style="color:var(--mut)">${STN[s.stat.name] || s.stat.name}</span><b>${v}</b><span class="bar"><i style="width:${Math.min(100, v / 2.0)}%;background:${c}"></i></span></div>`; }).join('');
+  const { set, label } = pickSpriteSet(pk, grp);
+  const fig = (src, cap) => src ? `<figure><img loading="lazy" src="${esc(src)}" alt="">${cap}</figure>` : '';
+  const sprites = fig(set.front_default, 'Normal') + fig(set.back_default, 'Back') + fig(set.front_shiny, 'Shiny') + fig(set.back_shiny, 'Shiny back')
+    + (set.front_female ? fig(set.front_female, '♀') + fig(set.front_shiny_female, '♀ Shiny') : '');
+  const gen = grp ? grp.gen : 99;
+  const types = typesForGame(pk, grp);
+  const wk = weaknesses(types, gen);
+  const lbl = { 4: '4×', 2: '2×', 0.5: '½×', 0.25: '¼×', 0: '0×' };
+  const wkHtml = [4, 2, 0.5, 0.25, 0].filter(m => wk[m]).map(m => `<div class="wk"><b>${lbl[m]}</b><div class="tys" style="justify-content:flex-start">${wk[m].map(t => tchip(t, 1)).join('')}</div></div>`).join('');
+  const abil = gen < 3 ? '<span style="color:var(--mut)">Abilities don\'t exist in this game</span>' :
+    pk.abilities.map(a => `<button class="ab" data-a="${esc(a.ability.url)}"><b>${esc(pretty(a.ability.name))}</b> ${a.is_hidden ? '<small>(Hidden)</small>' : ''}<span class="eff"></span></button>`).join('');
+  pane.innerHTML = `
+    <div class="box"><h3>Pokédex entry</h3>${flavor || '<span style="color:var(--mut)">No entry.</span>'}</div>
+    <div class="box"><h3>Sprites · ${esc(label)}${S.shiny ? '' : ''}</h3><div class="sprites">${sprites || '<span style="color:var(--mut)">No sprites</span>'}</div></div>
+    <div class="box"><h3>Base stats</h3>${stats}<div class="stat"><span style="color:var(--mut)">Total</span><b>${total}</b><span></span></div></div>
+    <div class="box"><h3>Abilities</h3>${abil}</div>
+    <div class="box"><h3>Type matchups (defending)</h3>${wkHtml}</div>
+    <div class="box"><h3>Info</h3><dl class="kv">
+      <dt>Height</dt><dd>${(pk.height / 10).toFixed(1)} m</dd>
+      <dt>Weight</dt><dd>${(pk.weight / 10).toFixed(1)} kg</dd>
+      <dt>Gender</dt><dd>${gender}</dd>
+      <dt>Catch rate</dt><dd>${sp.capture_rate}</dd>
+      <dt>Base friendship</dt><dd>${sp.base_happiness ?? '—'}</dd>
+      <dt>Base exp</dt><dd>${pk.base_experience ?? '—'}</dd>
+      <dt>Growth rate</dt><dd>${esc(pretty(sp.growth_rate?.name))}</dd>
+      <dt>Egg groups</dt><dd>${esc(sp.egg_groups.map(e => pretty(e.name)).join(', ') || '—')}</dd>
+      <dt>Egg cycles</dt><dd>${sp.hatch_counter ?? '—'}</dd>
+      <dt>Held items</dt><dd>${esc(pk.held_items.map(h => pretty(h.item.name)).join(', ') || '—')}</dd>
+      <dt>Introduced</dt><dd>Generation ${genNum(sp.generation.name)}</dd>
+    </dl></div>
+    ${pk.cries?.latest ? `<div class="box"><h3>Cry</h3><button class="ab" id="cry">▶ Play cry</button></div>` : ''}`;
+  pane.querySelectorAll('.ab[data-a]').forEach(b => b.onclick = async () => {
+    const e = b.querySelector('.eff'); if (e.textContent) { e.textContent = ''; return; }
+    e.innerHTML = '<span class="spin"></span>';
+    try { const a = await get(b.dataset.a);
+      const ef = (a.effect_entries.find(x => x.language.name === 'en') || {}).short_effect
+        || ((a.flavor_text_entries || []).filter(x => x.language.name === 'en').pop() || {}).flavor_text || 'No description.';
+      e.textContent = ef; } catch { e.textContent = 'Could not load.'; }
+  });
+  if ($('#cry')) $('#cry').onclick = () => { try { new Audio(pk.cries.latest).play().catch(() => { if (pk.cries.legacy) new Audio(pk.cries.legacy).play().catch(() => {}); }); } catch {} };
+}
+
+/* --- Evolution --- */
+function evoText(d) {
+  const p = []; const t = d.trigger?.name;
+  if (t === 'level-up') p.push(d.min_level ? `Lv. ${d.min_level}` : 'Level up');
+  else if (t === 'use-item') p.push(`Use ${pretty(d.item?.name)}`);
+  else if (t === 'trade') p.push('Trade');
+  else if (t) p.push(pretty(t));
+  if (d.held_item) p.push(`holding ${pretty(d.held_item.name)}`);
+  if (d.trade_species) p.push(`for ${pname(d.trade_species.name)}`);
+  if (d.min_happiness) p.push('with high friendship');
+  if (d.min_affection) p.push('with high affection');
+  if (d.min_beauty) p.push('with high Beauty');
+  if (d.known_move) p.push(`knowing ${pretty(d.known_move.name)}`);
+  if (d.known_move_type) p.push(`knowing a ${pretty(d.known_move_type.name)} move`);
+  if (d.location) p.push(`at ${pretty(d.location.name)}`);
+  if (d.time_of_day) p.push(`(${d.time_of_day})`);
+  if (d.gender === 1) p.push('(female)'); if (d.gender === 2) p.push('(male)');
+  if (d.needs_overworld_rain) p.push('while raining');
+  if (d.party_species) p.push(`with ${pname(d.party_species.name)} in party`);
+  if (d.party_type) p.push(`with a ${pretty(d.party_type.name)}-type in party`);
+  if (d.relative_physical_stats === 1) p.push('(Atk > Def)');
+  if (d.relative_physical_stats === -1) p.push('(Atk < Def)');
+  if (d.relative_physical_stats === 0) p.push('(Atk = Def)');
+  if (d.turn_upside_down) p.push('holding console upside down');
+  return p.join(' ');
+}
+async function tabEvo(pane, alive) {
+  const { sp, id } = D;
+  if (!sp.evolution_chain) { pane.innerHTML = '<div class="empty">No evolution data.</div>'; return; }
+  const ch = await get(sp.evolution_chain.url); if (!alive()) return;
+  const node = n => {
+    const nid = idFromUrl(n.species.url);
+    const img = S.shiny ? `${SPR}shiny/${nid}.png` : `${SPR}${nid}.png`;
+    const card = `<a class="evo-card ${nid === id ? 'cur' : ''}" href="#${nid}"><img loading="lazy" src="${img}" alt=""><span>${esc(pname(n.species.name))}</span></a>`;
+    const kids = n.evolves_to.length ? `<div class="evo-branches">${n.evolves_to.map(k => {
+      const txt = [...new Set(k.evolution_details.map(evoText).filter(Boolean))].join(' · or · ') || 'Evolves';
+      return `<div class="evo-branch"><div class="evo-arrow">${esc(txt)}</div>${node(k)}</div>`; }).join('')}</div>` : '';
+    return `<div class="evo">${card}${kids}</div>`;
+  };
+  const forms = sp.varieties.filter(v => !v.is_default);
+  const formsHtml = forms.length ? `<div class="box"><h3>Other forms</h3><div class="sprites">${(await Promise.all(forms.map(f => get(f.pokemon.url).catch(() => null)))).filter(Boolean).map(p => {
+      const s = S.shiny ? (p.sprites.front_shiny || p.sprites.other?.home?.front_shiny) : (p.sprites.front_default || p.sprites.other?.home?.front_default);
+      return `<figure data-v="${esc(`${API}pokemon/${p.id}/`)}" style="cursor:pointer">${s ? `<img loading="lazy" src="${esc(s)}" alt="">` : ''}${esc(pretty(p.name))}</figure>`; }).join('')}</div><div style="color:var(--mut);font-size:12px;margin-top:6px">Tap a form to view its stats, moves and types.</div></div>` : '';
+  if (!alive()) return;
+  pane.innerHTML = `<div class="box"><h3>Evolution line${S.shiny ? ' · shiny' : ''}</h3>${node(ch.chain)}</div>${formsHtml}`;
+  pane.querySelectorAll('figure[data-v]').forEach(f => f.onclick = () => get(f.dataset.v).then(p => { D.pk = p; D.tab = 'about'; renderDetail(); scrollTo(0, 0); }));
+}
+
+/* --- Locations --- */
+const METHOD = { walk: 'Grass / cave', surf: 'Surfing', 'old-rod': 'Old Rod', 'good-rod': 'Good Rod', 'super-rod': 'Super Rod', 'rock-smash': 'Rock Smash',
+  headbutt: 'Headbutt', gift: 'Gift', 'gift-egg': 'Gift egg', 'only-one': 'Static encounter', 'dark-grass': 'Dark grass', 'grass-spots': 'Rustling grass',
+  'cave-spots': 'Dust cloud', 'bridge-spots': 'Bridge shadow', 'surf-spots': 'Rippling water', 'super-rod-spots': 'Rippling water (rod)', 'sos-encounter': 'SOS call' };
+const locName = n => pretty(n.replace(/-area$/, ''));
+async function tabLoc(pane, alive) {
+  const { pk, sp } = D; const grp = curGroup();
+  const enc = await get(`pokemon/${pk.id}/encounters`); if (!alive()) return;
+  const verOrder = S.groups.flatMap(g => g.versions);
+  const byVer = {};
+  for (const e of enc) for (const vd of e.version_details) {
+    const v = vd.version.name; if (grp && !grp.versions.includes(v)) continue;
+    const L = ((byVer[v] ||= {})[e.location_area.name] ||= {});
+    for (const d of vd.encounter_details) {
+      const conds = d.condition_values.map(c => c.name).filter(c => !/-(no|none|off)$/.test(c));
+      const k = d.method.name + '|' + conds.join(',');
+      const m = (L[k] ||= { method: d.method.name, conds, min: 999, max: 0, chance: 0 });
+      m.min = Math.min(m.min, d.min_level); m.max = Math.max(m.max, d.max_level); m.chance += d.chance;
+    }
+  }
+  const renderVer = locs => Object.entries(locs).sort(([a], [b]) => a.localeCompare(b)).map(([ln, ms]) => `<div class="loc"><div class="ln">${esc(locName(ln))}</div>${Object.values(ms).map(m =>
+    `<div class="ld">${esc(METHOD[m.method] || pretty(m.method))} · Lv ${m.min === m.max ? m.min : m.min + '–' + m.max}${m.chance ? ` · ${Math.min(100, m.chance)}%` : ''} ${m.conds.map(c => `<span class="cond">${esc(pretty(c))}</span>`).join('')}</div>`).join('')}</div>`).join('');
+  const vers = Object.keys(byVer).sort((a, b) => verOrder.indexOf(a) - verOrder.indexOf(b));
+  const hint = sp.evolves_from_species ? `<p>Try catching <a href="#${idFromUrl(sp.evolves_from_species.url)}" style="color:var(--acc2);font-weight:700">${esc(pname(sp.evolves_from_species.name))}</a> and evolving it.</p>` : '';
+  if (!vers.length) {
+    pane.innerHTML = `<div class="box"><h3>Where to find</h3><p>No wild encounters recorded${grp ? ' in ' + esc(gameLabel(grp.name)) : ''}.</p>${hint}
+      <p style="color:var(--mut);font-size:13px">It may be obtained by evolution, trade, event, or a gift. Note: PokéAPI's location data is incomplete for Sword/Shield onwards (Gen 8–9), so newer games often show nothing here.</p></div>`;
+    return;
+  }
+  // merge versions with identical content (e.g. Red & Blue)
+  const groups = [];
+  for (const v of vers) { const html = renderVer(byVer[v]); const g = groups.find(x => x.html === html); g ? g.vers.push(v) : groups.push({ vers: [v], html }); }
+  if (grp) pane.innerHTML = groups.map(g => `<div class="box"><h3>${esc(g.vers.map(pretty).join(' & '))}</h3>${g.html}</div>`).join('');
+  else pane.innerHTML = `<div style="color:var(--mut);font-size:13px;margin-bottom:8px">Pick a game at the top to see just that game. All games:</div>` +
+    groups.map(g => `<details class="vg"><summary>${esc(g.vers.map(pretty).join(' & '))}</summary>${g.html}</details>`).join('');
+}
+
+/* --- Moves --- */
+async function tabMoves(pane, alive) {
+  const { pk } = D;
+  const have = new Set(); pk.moves.forEach(m => m.version_group_details.forEach(v => have.add(v.version_group.name)));
+  const avail = S.groups.filter(g => have.has(g.name));
+  if (!avail.length) { pane.innerHTML = '<div class="empty">No move data.</div>'; return; }
+  let g = D.moveGroup && have.has(D.moveGroup) ? D.moveGroup : (S.game !== 'all' ? S.game : avail[avail.length - 1].name);
+  const drawn = () => renderMovesFor(pane, alive, g, avail, have);
+  D.redrawMoves = v => { g = v; D.moveGroup = v; drawn(); };
+  drawn();
+}
+function renderMovesFor(pane, alive, gname, avail, have) {
+  const { pk } = D; const grp = S.gmap[gname];
+  const sel = `<select class="sel mvsel" id="mvsel">${S.game !== 'all' && !have.has(S.game) ? `<option value="${S.game}" selected>${esc(gameLabel(S.game))} (not available)</option>` : ''}${avail.map(g => `<option value="${g.name}" ${g.name === gname ? 'selected' : ''}>${esc(gameLabel(g.name))}</option>`).join('')}</select>`;
+  if (!have.has(gname)) {
+    pane.innerHTML = sel + `<div class="empty">${esc(pname(pk.name))} has no moves in ${esc(gameLabel(gname))} – it's not obtainable there. Choose another game above.</div>`;
+    $('#mvsel').onchange = e => D.redrawMoves(e.target.value); return;
+  }
+  const sec = { 'level-up': [], machine: [], egg: [], tutor: [], other: [] };
+  for (const m of pk.moves) for (const v of m.version_group_details) {
+    if (v.version_group.name !== gname) continue;
+    const meth = v.move_learn_method.name;
+    (sec[meth] || sec.other).push({ name: m.move.name, url: m.move.url, lv: v.level_learned_at, meth, order: v.order });
+  }
+  sec['level-up'].sort((a, b) => a.lv - b.lv || (a.order ?? 0) - (b.order ?? 0) || a.name.localeCompare(b.name));
+  ['machine', 'egg', 'tutor', 'other'].forEach(k => sec[k].sort((a, b) => a.name.localeCompare(b.name)));
+  const TITLE = { 'level-up': 'Level up', machine: 'TM / HM / TR', egg: 'Egg moves', tutor: 'Move tutor', other: 'Other (form change, events…)' };
+  const row = (m, i) => `<div class="mv" data-m="${esc(m.url)}" data-k="${m.meth}"><span class="lv">${m.meth === 'level-up' ? (m.lv ? 'Lv ' + m.lv : 'Evo') : m.meth === 'machine' ? '<span class="tm">…</span>' : m.meth === 'egg' ? 'Egg' : m.meth === 'tutor' ? 'Tutor' : pretty(m.meth).slice(0, 6)}</span><span class="mn">${esc(pretty(m.name))}</span><span class="ty"></span><span class="ct"></span><span class="num pw">…</span><span class="num ac"></span></div><div class="mveff hidden"></div>`;
+  pane.innerHTML = sel + Object.entries(sec).filter(([, l]) => l.length).map(([k, l]) =>
+    `<div class="box" data-sec="${k}"><h3>${TITLE[k]} (${l.length})</h3><div class="mvhead"><span></span><span>Move</span><span>Type</span><span>Cat</span><span class="num">Pow</span><span class="num">Acc</span></div><div class="mvlist">${l.map(row).join('')}</div></div>`).join('')
+    + `<div class="foot">Tap a move for its effect. Power/accuracy shown as they were in ${esc(gameLabel(gname))}.</div>`;
+  $('#mvsel').onchange = e => D.redrawMoves(e.target.value);
+  const gi = grp.idx;
+  const rows = [...pane.querySelectorAll('.mv')];
+  const machinePromises = [];
+  rows.forEach(r => {
+    r.onclick = () => { const e = r.nextElementSibling; e.classList.toggle('hidden'); };
+    const p = get(r.dataset.m).then(async mv => {
+      if (!alive() || !r.isConnected) return;
+      let { power, accuracy, pp } = mv; let type = mv.type.name;
+      // apply historic values: past_values hold values used BEFORE that version group
+      const pv = (mv.past_values || []).map(x => ({ ...x, i: S.gmap[x.version_group.name]?.idx ?? -1 })).filter(x => x.i > gi).sort((a, b) => a.i - b.i);
+      if (pv.length) { const x = pv[0]; if (x.power != null) power = x.power; if (x.accuracy != null) accuracy = x.accuracy; if (x.pp != null) pp = x.pp; if (x.type) type = x.type.name; }
+      const nm = (mv.names.find(n => n.language.name === 'en') || {}).name; if (nm) r.querySelector('.mn').textContent = nm;
+      r.querySelector('.ty').innerHTML = tchip(type, 1);
+      const dc = mv.damage_class?.name || 'status';
+      r.querySelector('.ct').innerHTML = `<span class="cat ${dc}">${dc[0].toUpperCase()}</span>`;
+      r.querySelector('.pw').textContent = power ?? '—';
+      r.querySelector('.ac').textContent = accuracy != null ? accuracy : '—';
+      const eff = (mv.effect_entries.find(x => x.language.name === 'en') || {}).short_effect;
+      const fl = (mv.flavor_text_entries.filter(x => x.language.name === 'en' && x.version_group.name === gname)[0] || mv.flavor_text_entries.filter(x => x.language.name === 'en').pop() || {}).flavor_text;
+      r.nextElementSibling.textContent = `${pp != null ? 'PP ' + pp + ' · ' : ''}${(eff || fl || 'No description.').replace(/\$effect_chance/g, mv.effect_chance ?? '')}`.replace(/\s+/g, ' ');
+      if (r.dataset.k === 'machine') {
+        const mm = (mv.machines || []).find(x => x.version_group.name === gname);
+        if (mm) { const mach = await get(mm.machine.url); const lbl = mach.item.name.toUpperCase(); r.querySelector('.tm').textContent = lbl;
+          const n = parseInt(lbl.replace(/\D/g, ''), 10); r.dataset.sort = (lbl.startsWith('HM') ? 1000 : lbl.startsWith('TR') ? 2000 : 0) + n; }
+        else r.querySelector('.tm').textContent = 'TM';
+      }
+    }).catch(() => { if (r.isConnected) r.querySelector('.pw').textContent = '?'; });
+    if (r.dataset.k === 'machine') machinePromises.push(p);
+  });
+  Promise.all(machinePromises).then(() => {
+    if (!alive()) return; const list = pane.querySelector('[data-sec="machine"] .mvlist'); if (!list) return;
+    const pairs = [...list.querySelectorAll('.mv')].map(r => [r, r.nextElementSibling]);
+    pairs.sort((a, b) => (+a[0].dataset.sort || 9999) - (+b[0].dataset.sort || 9999));
+    pairs.forEach(([r, e]) => { list.appendChild(r); list.appendChild(e); });
+  });
+}
+
+init();
+</script>
+</body>
+</html>
